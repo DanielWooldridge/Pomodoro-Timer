@@ -1,0 +1,338 @@
+﻿<Window x:Class="PomodoroTimer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PomodoroTimer"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Title="Pomodoro Timer" Height="450" Width="850"
+        Background="Black">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" CaptionHeight="0"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+
+        <!-- Reusable gradient -->
+        <LinearGradientBrush x:Key="MainGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="Black" Offset="0"/>
+            <GradientStop Color="#FFDC3B60" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Big circular timer button (unchanged) -->
+        <Style x:Key="BtnStyle" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="250"/>
+            <Setter Property="Width" Value="250"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="5"/>
+            <Setter Property="FontSize" Value="34"/>
+            <Setter Property="FontFamily" Value="Showcard Gothic"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="scale" ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform Y="70"/>
+                                </TransformGroup>
+                            </Grid.RenderTransform>
+
+                            <Ellipse
+                                Fill="{TemplateBinding Background}"
+                                Stroke="{TemplateBinding BorderBrush}"
+                                StrokeThickness="{TemplateBinding BorderThickness}" />
+
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale"
+                                                             Storyboard.TargetProperty="ScaleX"
+                                                             To="1.1" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale"
+                                                             Storyboard.TargetProperty="ScaleY"
+                                                             To="1.1" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale"
+                                                             Storyboard.TargetProperty="ScaleX"
+                                                             To="1.0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale"
+                                                             Storyboard.TargetProperty="ScaleY"
+                                                             To="1.0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Reset button to match theme -->
+        <Style x:Key="ResetBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource MainGradient}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Blackadder ITC"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.65"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="FontFamily" Value="Blackadder ITC"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <!-- Border for closed state -->
+                            <Border x:Name="Outer"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                                <Grid>
+                                    <!-- Selected item -->
+                                    <ContentPresenter x:Name="ContentSite"
+                                              Margin="8,2,26,2"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
+
+                                    <!-- DropDown toggle button just for arrow -->
+                                    <ToggleButton x:Name="DropDownToggle"
+                                          Grid.Column="2"
+                                          Focusable="False"
+                                          ClickMode="Press"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          HorizontalAlignment="Right"
+                                          Width="20"
+                                          Margin="0,0,4,0">
+                                        <Path x:Name="Arrow" Width="10" Height="6"
+                                      Stretch="Uniform"
+                                      Fill="White"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Data="M 0 0 L 5 5 L 10 0 Z"/>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+
+                            <!-- Popup -->
+                            <Popup x:Name="PART_Popup"
+                           Placement="Bottom"
+                           AllowsTransparency="True"
+                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                           PopupAnimation="Slide">
+                                <Border Margin="0,2,0,0"
+                                Background="Black"
+                                BorderBrush="White"
+                                BorderThickness="2"
+                                CornerRadius="6">
+                                    <ScrollViewer CanContentScroll="True">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Outer" Property="BorderBrush" Value="#FFDC3B60"/>
+                                <Setter TargetName="Arrow" Property="Fill" Value="#FFDC3B60"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Outer" Property="BorderBrush" Value="#FFDC3B60"/>
+                                <Setter TargetName="Arrow" Property="Fill" Value="#FFDC3B60"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Outer" Property="Background" Value="#333"/>
+                                <Setter TargetName="Arrow" Property="Fill" Value="#777"/>
+                                <Setter Property="Foreground" Value="#999"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <!-- Items inside the dropdown -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Blackadder ITC"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFDC3B60"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#FFDC3B60"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <!-- Top row -->
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+            <!-- Main content -->
+        </Grid.RowDefinitions>
+
+        <!-- Top Bar -->
+        <Grid Grid.Row="0" Background="#FFDC3B60">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="btnMin" Content="_" Width="40" Height="40"
+                        BorderBrush="Transparent" Background="Transparent" Foreground="White"
+                        Click="btnMin_Click"/>
+                <Button x:Name="btnClose" Content="X" Width="40" Height="40"
+                        BorderBrush="Transparent" Background="Transparent" Foreground="White"
+                        Click="btnClose_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Background="#FFDC3B60" Margin="10,0,669,0">
+            <TextBlock Text="Pomodoro Timer"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="18"
+                       FontFamily="Blackadder ITC" Height="20" Width="171"/>
+        </Grid>
+
+        <!-- Cycles selector row -->
+        <Grid Grid.Row="1">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="10,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Cycles:"
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               Margin="0,0,5,0"
+                               FontWeight="Bold"/>
+                    <ComboBox x:Name="cycleSelector"
+                              Style="{StaticResource ComboBoxStyle}"
+                              Width="80" Height="30"
+                              SelectedIndex="3">
+                        <ComboBoxItem>1</ComboBoxItem>
+                        <ComboBoxItem>2</ComboBoxItem>
+                        <ComboBoxItem>3</ComboBoxItem>
+                        <ComboBoxItem>4</ComboBoxItem>
+                        <ComboBoxItem>5</ComboBoxItem>
+                        <ComboBoxItem>6</ComboBoxItem>
+                        <ComboBoxItem>7</ComboBoxItem>
+                        <ComboBoxItem>8</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Circular Button -->
+        <Button x:Name="btnTimer"
+                Style="{StaticResource BtnStyle}"
+                Content="Start Timer"
+                Click="OnStartTimer"
+                HorizontalAlignment="Center" Margin="0,20,0,0"
+                Grid.RowSpan="3" FontFamily="Blackadder ITC">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="Black"/>
+                    <GradientStop Color="#FFDC3B60" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+
+        <!-- Reset -->
+        <Button x:Name="btnReset"
+                Content="Reset Timer"
+                Style="{StaticResource ResetBtnStyle}"
+                Click="btnReset_Click"
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,55"/>
+
+        <!-- Decorative path (unchanged) -->
+        <Path HorizontalAlignment="Center" Height="206" Margin="0,166,0,0"
+              Grid.Row="2" Stretch="Fill" VerticalAlignment="Top" Width="856">
+            <Path.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="Black"/>
+                    <GradientStop Color="#FFDC3B60" Offset="1"/>
+                </LinearGradientBrush>
+            </Path.Fill>
+            <Path.Stroke>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="Black"/>
+                    <GradientStop Color="White" Offset="1"/>
+                </LinearGradientBrush>
+            </Path.Stroke>
+            <Path.Data>
+                <PathGeometry Figures="M850.95156,449.22145 L0.2300848,449.72147 1.2868322,384.85209 C1.2868322,384.85209 0.72992113,362.06147 51.318893,362.06147 101.90787,362.06147 102.69653,384.2255 102.69653,384.2255 L103.44629,410.24956 C103.44629,410.24956 100.19735,396.80172 139.43451,396.42817 178.67166,396.05462 176.17248,411.2457 176.17248,411.2457 L176.92223,427.80647 C176.92223,427.80647 175.92256,416.97348 200.91438,417.47155 225.90619,417.96962 223.65693,429.30067 223.65693,429.30067 L223.40701,441.50334 C223.40701,441.50334 220.15808,436.77169 237.40243,436.89621 254.64678,437.02073 249.64842,442.25044 249.64842,442.25044 L594.53549,442.25044 C594.53549,442.25044 593.53582,434.53039 608.53091,435.02845 623.526,435.52652 622.02649,441.75237 622.02649,441.75237 L621.19343,426.06323 C621.19343,426.06323 614.52895,411.12118 641.52011,411.12118 668.51127,411.12118 665.51226,423.57289 665.51226,423.57289 L666.51193,396.17913 C666.51193,396.17913 661.51356,380.73902 698.50145,381.73516 735.48934,382.73129 728.49163,394.68493 728.49163,394.68493 L727.49196,371.27572 C727.49196,371.27572 732.49033,348.36459 788.472,347.86652 844.45367,347.36845 854.45039,370.9702 854.45039,370.9702"/>
+            </Path.Data>
+        </Path>
+    </Grid>
+</Window>
