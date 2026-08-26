@@ -27,11 +27,7 @@ The final interface was implemented using WPF and XAML, with Blend helping durin
 
 ## Preview
 
-Add a screenshot of the application here.
-
-```text
-TODO: Add screenshot
-```
+<img width="852" height="448" alt="PomodoroTimer Screenshot" src="https://github.com/user-attachments/assets/4005f343-2568-446c-91c5-25e8e169666c" />
 
 ## How It Works
 
